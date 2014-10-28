@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Create Account | Chat Over Wifi</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href="files/bootstrap.min.css" rel="stylesheet">
+        <link href="files/main.css" rel="stylesheet">
+        <script src="files/ui.js" type="text/javascript"></script>
+        <script type="text/javascript">
+          function createAccount(){
+              var name=dom.el("username").value;
+              var passed= /^[0-9A-Za-z]+$/.test(name);
+              if(!passed){
+                showInfo("only alphanumeric characters allowed"); 
+                dom.el("username").focus();
+                return;  
+              }
+              var newpass=dom.el("new_password").value;
+              var confirmpass=dom.el("confirm_new_password").value;
+              if(name==""){
+                showInfo("Name is required"); 
+                dom.el("username").focus();
+                return;
+              }
+              if(newpass==""){
+                  showInfo("New password is required"); 
+                  dom.el("new_password").focus();
+                  return;
+              }
+              if(confirmpass==""){
+                  showInfo("Confirm new password is required");  
+                  dom.el("confirm_new_password").focus();
+                return;
+              }
+              if(confirmpass!=newpass){
+                    showInfo("Passwords do not match");
+                    return;
+                 }
+                 
+               var json={
+                  request_header : {
+                     request_msg : "create_account"
+                  },
+                  
+                  request_object : {
+                     username : name,
+                     password : newpass
+                  }
+              }
+          
+                  
+               Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  loadArea : "change_load",
+                  data : json,
+                  error : function(err){
+                     showInfo("An error occurred "+err);
+                  },
+                  success : function(json){
+                    if(json.response.success=="false"){
+                      showInfo("That user already exists ");   
+                    }
+                   else{
+                     window.location="index.html";
+                   }
+                } 
+             });
+              
+
+        }
+        
+           function showInfo(val){
+              document.getElementById("error").innerHTML=val;
+           }
+        </script>
+    </head>
+    <body>
+        <div class="login-form">      
+                <h3>Create Account</h3>
+                <label>Username</label>
+                <input type="text" class="input-block-level" id="username" placeholder="Username" >
+                <label>New Password</label>
+                <input type="password" class="input-block-level" id="new_password" placeholder="New Password">
+                <label>Confirm New Password</label>
+                <input type="password" class="input-block-level" id="confirm_new_password" placeholder="Confirm New Password">
+                <label id="error" style="color : red;"></label>
+                <label id="change_load" style="display: none;"><img src="files/loader.gif"/></label>
+                <footer>
+                    <button type="button" class="btn btn-medium btn-primary pull-right" onclick="createAccount()">Create Account</button>
+                </footer>
+              <div style="clear: both"></div>
+        </div>
+            
+        
+    </body>
+</html>

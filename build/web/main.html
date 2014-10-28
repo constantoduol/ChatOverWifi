@@ -1,0 +1,996 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat Over Wifi</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href="files/bootstrap.min.css" rel="stylesheet">
+        <link href="files/main.css" rel="stylesheet">
+        <script src="files/ui.js" type="text/javascript"></script>
+        <script src="files/jquery-1.8.1.min.js"></script>
+        <script src="files/bootstrap-modal.js"></script>
+        <script type="text/javascript">
+            
+            var CHAT_INTERVAL=1000;
+            var time;
+            var currentFriend;
+            var currentFriendID;
+            var currentFriendStatus;
+            var userName;
+            var friendData;
+            window.onload=function(){
+              userName=cookieStorage.getItem("user");
+              if(userName==null || userName==""){
+                  window.location="index.html";
+              }
+              document.getElementById("log_name").innerHTML="<h4>Welcome "+userName+"</h4>";
+              friendList();
+              realTime();
+             }
+           
+             function doLogOut(){
+               clearInterval(time);
+               var json={
+                  request_header : {
+                     request_msg : "logout"
+                  },
+                  
+                  request_object : {
+                    
+                  }
+              }
+               
+             Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  data : json,
+                  error : function(err){
+                     showInfo("error","An error occurred "+err);
+                  },
+                  success : function(json){
+                  
+                }  
+             });
+           }
+           
+           
+           function deleteFriend(id){
+               var json={
+                  request_header : {
+                     request_msg : "delete_friend"
+                  },
+                  
+                  request_object : {
+                     friend_id : id
+                  }
+              }
+               
+             Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  loadArea : "user_load",
+                  data : json,
+                  error : function(err){
+                     showInfo("user_info","An error occurred "+err);
+                  },
+                  success : function(json){
+                    if(json.response.success=="true"){
+                       showInfo("user_info","Friend deleted successfully");  
+                       friendList();
+                    }
+                    else{
+                       showInfo("user_info","Friend deleting failed, "+json.response.reason);   
+                    }
+                }  
+             });
+           }
+           
+           
+           function chatFriend(name,friendID,status){
+             dom.el("send_button").disabled=false;
+             dom.el("message_area").disabled=false;
+             dom.el("attach_file").disabled=false;
+             dom.el("message_area").focus();
+             dom.el("current_friend").value=friendID;
+             currentFriend=name;
+             currentFriendID=friendID;
+             currentFriendStatus=status;
+             if(status==0){
+               showInfo("chat_info", name + " is offline and will receive this message when he logs in");  
+             }
+           }
+           
+           function addFriend(){
+               var name=dom.el("username").value;
+               if(name==""){
+                 showInfo("user_info","Friend name is required");
+                 dom.el("username").focus();
+                 return;
+               }
+               var json={
+                  request_header : {
+                     request_msg : "add_friend"
+                  },
+                  
+                  request_object : {
+                     name : name
+                  }
+              }
+               
+             Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  loadArea : "user_load",
+                  data : json,
+                  error : function(err){
+                     showInfo("user_info","An error occurred "+err);
+                  },
+                  success : function(json){
+                    if(json.response.success=="true"){
+                       showInfo("user_info","Friend added successfully");  
+                       friendList();
+                    }
+                    else{
+                       showInfo("user_info","Friend adding failed, "+json.response.reason);   
+                    }
+                }  
+             });  
+           }
+           
+           function friendList(){
+                 var json={
+                  request_header : {
+                     request_msg : "friend_list"
+                  },
+                  
+                  request_object : {
+                 
+                  }
+              }
+               
+             Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  loadArea : "user_load",
+                  data : json,
+                  error : function(err){
+                     showInfo("user_info","An error occurred "+err);
+                  },
+                  success : function(json){
+                    var area=dom.el("friend_list");
+                    area.innerHTML="";
+                    if(json.response.success=="false"){
+                      return;
+                    }
+                    var names=json.response.data.USER_NAME;
+                    friendData=json.response.data;
+                    var status=json.response.data.IS_ONLINE;
+                    var friendIDs=json.response.data.USER_ID;
+                    depopulateSelect("current_friend");
+                    populateSelect("current_friend",names, friendIDs);
+                    depopulateSelect("prev_current_friend");
+                    addOption("prev_current_friend", "All", "all");
+                    populateSelect("prev_current_friend",names, friendIDs);
+                    var table=document.createElement("table");
+                    table.setAttribute("class","table");
+                    var th=document.createElement("th");
+                    var th1=document.createElement("th");
+                    var th2=document.createElement("th");
+                    var th3=document.createElement("th");
+                    th.innerHTML="Name";
+                    th3.innerHTML="Status";
+                    th1.innerHTML="";
+                    th2.innerHTML="";
+                  
+                    table.appendChild(th);
+                    table.appendChild(th3);
+                    table.appendChild(th1);
+                    table.appendChild(th2);
+                    for(var x=0; x<names.length; x++){
+                       var tr=document.createElement("tr");
+                       var td=document.createElement("td"); 
+                       var td1=document.createElement("td"); 
+                       var td2=document.createElement("td");
+                       var td3=document.createElement("td");
+                       td.innerHTML=names[x];
+                       if(status[x]=="1"){
+                           td3.innerHTML="online";  
+                       }
+                       else if(status[x]=="0"){
+                          td3.innerHTML="offline";   
+                       }
+                       td1.innerHTML="<a href='#message_area' onclick='javascript:chatFriend(\""+names[x]+"\",\""+friendIDs[x]+"\",\""+status[x]+"\")'>Chat</a>";
+                       td2.innerHTML="<a href='#message_area' title='Deleting this user will prevent him/her from sending you messages' onclick='javascript:deleteFriend(\""+friendIDs[x]+"\")'>Delete</a>";
+                       tr.appendChild(td);
+                       tr.appendChild(td3);
+                       tr.appendChild(td1);
+                       tr.appendChild(td2);
+                       table.appendChild(tr);
+                    }
+                   area.appendChild(table);
+                   var href=document.createElement("a");
+                   href.href="javascript:hide('friend_list')";
+                   href.innerHTML="Hide";
+                   area.appendChild(href);
+                }  
+             });   
+           }
+           
+            function showInfo(area,val){
+              document.getElementById(area).innerHTML=val;
+           }
+           
+           function hide(id){
+             document.getElementById(id).innerHTML="";
+           }
+           
+           
+           function sendMessage(){
+             var txt=dom.el("message_area").value;
+                var json={
+                  request_header : {
+                     request_msg : "send_msg"
+                  },
+                  
+                  request_object : {
+                    to_name : currentFriend,
+                    message : txt,
+                    to_id : currentFriendID
+                  }
+              }
+               
+             Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  loadArea : "chat_load",
+                  data : json,
+                  error : function(err){
+                      showInfo("chat_info","An error occurred ");
+                  },
+                  success : function(json){
+                    if(json.response.success=="true"){
+                       messageSent(txt,currentFriend);
+                       
+                    }
+                    else{
+                       showInfo("chat_info",json.response.reason);   
+                    }
+                }  
+             }); 
+           }
+           
+          function messageSent(msg,name){
+              var div=dom.newEl("div");
+              var date=new Date();
+              var id=date.getTime();
+	      div.setAttribute("id",id);
+              div.style.border="2px solid #eee";
+              div.style.padding="10px";
+              div.style.margin="10px";
+              var time=getTime();
+              var txt=dom.newEl("textarea");
+              txt.disabled=true;
+              txt.attr("class","input-xxlarge");
+              txt.innerHTML=msg;
+              var txtID="txt_"+id;
+              txt.attr("id",txtID);
+              var button=dom.newEl("button");
+              button.attr("class","close");
+              button.attr("type","button");
+              button.attr("title","remove message");
+              button.innerHTML="&times";
+              button.attr("onclick","closeMessage("+id+")");
+              var label=dom.newEl("label");
+              label.innerHTML="<b>Me >> "+name+"</b>    "+time;
+              var data=dom.el("recent_data");
+              div.appendChild(button);
+              var href=dom.newEl("a");
+              href.href="#"+id;
+              href.innerHTML="Share";
+              href.attr("onclick","showShareWindow(\""+txtID+"\",false)");
+              div.appendChild(href);
+              div.appendChild(label);
+              div.appendChild(txt);
+             
+              data.appendChild(div);
+              var area=dom.el("message_area");
+              area.value="";
+              area.scrollIntoView();
+              area.focus();
+          }
+          
+          function getTime(){
+             var date=new Date();
+             var hours=date.getHours();
+             var mins=date.getMinutes();
+             var secs=date.getSeconds();
+             if(mins<10){
+               mins="0"+mins;  
+             }
+             if(secs<10){
+               secs="0"+secs;  
+             }
+            return hours+":"+mins+":"+secs;  
+          }
+          
+          function closeMessage(id){
+             var data=dom.el("recent_data");
+             data.removeChild(dom.el(id));
+          }
+          
+           function messageReceived(from,message){
+              message=message+"";
+              if(message.indexOf("@$%1289file")>-1){
+                  var arr=message.split("@$%1289file");
+                  var arr1=arr[1].split("$%@127");
+                  fileReceived(arr1[0],arr1[2],arr1[3],arr1[1],arr1[4]);
+                  // function fileReceived(from, message,fileName,accessToken,fakeFileName){
+                  return;
+              }
+              var div=dom.newEl("div");
+              var date=new Date();
+              var id=date.getTime();
+	      div.setAttribute("id",id);
+              var time=getTime();
+              var txt=dom.newEl("textarea");
+              div.style.border="4px solid #51CBEE";
+              div.style.padding="10px";
+              div.style.margin="10px";
+              txt.disabled=true;
+              txt.attr("class","input-xxlarge");
+              txt.innerHTML=message;
+              var txtID="txt_"+id;
+              txt.attr("id",txtID);
+              var button=dom.newEl("button");
+              button.attr("class","close");
+              button.attr("type","button");
+              button.attr("onclick","closeMessage("+id+")");
+              button.attr("title","remove message");
+              button.innerHTML="&times";
+              var label=dom.newEl("label");
+              label.innerHTML="<b>"+from+" >> Me</b>    "+time;
+              var data=dom.el("recent_data");
+              div.appendChild(button);
+              var href=dom.newEl("a");
+              href.href="#"+id;
+              href.innerHTML="Share"
+              href.attr("onclick","showShareWindow(\""+txtID+"\")");
+              div.appendChild(href);
+              div.appendChild(label);
+              div.appendChild(txt);
+             
+              data.appendChild(div); 
+              var area=dom.el("message_area");
+              area.scrollIntoView();
+              area.focus();
+              var playCheck=dom.el("notif_sound");
+              if(playCheck.checked){
+                playSound('notif');
+              }
+          }
+          
+         function fileReceived(from, message,fileName,accessToken,fakeFileName){
+              var div=dom.newEl("div");
+              var date=new Date();
+              var id=date.getTime();
+	      div.setAttribute("id",id);
+              div.style.border="4px solid #51CBEE";
+              div.style.padding="10px";
+              div.style.margin="10px";
+              var time=getTime();
+              div.attr("file_name",fileName);
+              div.attr("access_token",accessToken);
+              div.attr("fake_file_name",fakeFileName);
+              var html=message+" <a href='#message_area' onclick='downloadFile(\""+fileName+"\",\""+accessToken+"\",\""+fakeFileName+"\")'>Click to download "+fileName+"</a>  ";
+              div.innerHTML=html;
+              var button=dom.newEl("button");
+              button.attr("class","close");
+              button.attr("type","button");
+              button.attr("onclick","closeMessage("+id+")");
+              button.attr("title","remove message");
+              button.innerHTML="&times";
+              var label=dom.newEl("label");
+              label.innerHTML="<b>"+from+" >> Me</b>    "+time;
+              var data=dom.el("recent_data");
+              div.appendChild(button);
+              var href=dom.newEl("a");
+              href.href="#"+id;
+              href.innerHTML="Share"
+              href.attr("onclick","showShareWindow(\""+id+"\",true)");
+              div.appendChild(href);
+              div.appendChild(label);
+              data.appendChild(div); 
+              var area=dom.el("message_area");
+              area.scrollIntoView();
+              area.focus();
+               
+              var playCheck=dom.el("notif_sound");
+              if(playCheck.checked){
+                playSound('notif');
+              }  
+          } 
+          
+          function realTime(){
+             var json={
+                  request_header : {
+                     request_msg : "real_time"
+                  },
+                  
+                  request_object : {
+                    
+                  }
+              }
+              time=setInterval(function(){
+              Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  data : json,
+                  error : function(err){
+
+                  },
+                  success : function(json){
+                    if(json.response.success=="false"){
+                       
+                    }
+                    else{
+                       //show the data  
+                      for(var fromPerson in json.response.data){
+                         messageReceived(fromPerson,json.response.data[fromPerson]);
+                      }
+                   }
+                }  
+             });  
+             },CHAT_INTERVAL);   
+          }
+          
+       window.onkeypress=function(event){
+          var check=dom.el("enter_to_send");
+          var active=document.activeElement;
+          if(event.keyCode==13 && check.checked && active.id=="message_area"){
+            sendMessage();
+          }
+        }
+        
+        
+      function playSound(fileName){
+           document.getElementById("sound").innerHTML="<source src="+fileName+".ogg type='audio/ogg' ><audio autoplay='autoplay'><source src="+fileName+".mp3 type='audio/mpeg' ><embed hidden='true' loop='false' src=" + fileName+".mp3 ></audio>";
+     }
+     
+     function changeFriend(){
+       var select=dom.el("current_friend")
+       currentFriendID=select.value;
+       currentFriend=select.selectedOptions.item().text;
+     }
+     
+     function showShareWindow(divID,isFile){
+         var area= dom.el("share_area");
+         area.innerHTML="";
+         var table=dom.newEl("table");
+         table.attr("class","table");   
+         if(friendData==null){
+            friendList();  
+         }
+         var names=friendData.USER_NAME;
+         var status=friendData.IS_ONLINE;
+         var th=dom.newEl("th");
+         var th1=dom.newEl("th");
+         var th2=dom.newEl("th");
+         th.innerHTML="Names";
+         th1.innerHTML="Status";
+         th2.innerHTML="Check";
+         table.appendChild(th2);
+         table.appendChild(th);
+         table.appendChild(th1);
+         var td3=dom.newEl("td");
+         var td4=dom.newEl("td");
+         td4.innerHTML="<input type='checkbox' id='all_check' />"
+         td3.innerHTML="All Friends";
+         var tr1=dom.newEl("tr");
+         tr1.appendChild(td4);
+         tr1.appendChild(td3);
+         table.appendChild(tr1);
+         for(var x=0; x<names.length; x++){
+          var td=dom.newEl("td");
+          var td1=dom.newEl("td");
+          var td2=dom.newEl("td");
+          td.innerHTML=names[x];
+          if(status[x]=="1"){
+             td1.innerHTML="online"
+          }
+          else{
+           td1.innerHTML="offline"   
+          }
+          td2.innerHTML="<input type='checkbox' id='"+names[x]+"_check' />"
+          var tr=dom.newEl("tr");
+          tr.appendChild(td2);
+          tr.appendChild(td);
+          tr.appendChild(td1);
+          table.appendChild(tr);
+         }
+         area.appendChild(table);
+         if(isFile){
+             dom.el("share_button").attr("onclick","shareFile(\""+divID+"\")");
+         }
+         else{
+           dom.el("share_button").attr("onclick","shareMessage(\""+divID+"\")");
+         }
+        
+         $("#share-window").modal();
+     }
+     
+     function getFriendsToShare(){
+        var names=friendData.USER_NAME;
+        var ids=friendData.USER_ID;
+        var allCheck=dom.el("all_check");
+        if(allCheck.checked){
+          var all=[];
+          all.push(names,ids);
+          return all;
+        }
+        
+        var arr=[];
+        var arr1=[];
+        for(var x=0; x<names.length; x++){
+           var id=names[x]+"_check";
+           var checked=dom.el(id).checked;
+           if(checked){
+             arr.push(names[x]); 
+             arr1.push(ids[x]);
+           }
+        }
+        var arr3=[];
+        arr3.push(arr,arr1);
+       return arr3;
+     }
+     
+     function shareMessage(divID){
+          var arr=getFriendsToShare();
+          var json={
+               request_header : {
+                   request_msg : "share_msg"
+                  },
+                request_object : {
+                   to_names : arr[0],
+                   to_ids : arr[1],
+                   from_name : userName,
+                   message :  dom.el(divID).value
+                  }
+            }
+              Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  data : json,
+                  error : function(err){
+
+                  },
+                  success : function(json){
+                    if(json.response.success=="true"){
+                      var toAdd="";
+                      if(json.response.not_sent.length==arr.length){
+                         showInfo("chat_info","message not shared");  
+                         return;
+                      }
+                      else if(json.response.not_sent.length>0){
+                          toAdd=", message not shared with "+json.response.not_sent;
+                      }
+                      showInfo("chat_info","message shared successfully"+toAdd); 
+                    }
+                    else{
+                     showInfo("chat_info","message sharing failed ");
+                   }
+                }  
+             });
+      }
+      
+      function shareFile(divID){
+          var div=dom.el(divID);
+          var fileName=div.getAttribute("file_name");
+          var fakeName=div.getAttribute("fake_file_name");
+          var accessToken=div.getAttribute("access_token");
+          var arr=getFriendsToShare();
+          var json={
+               request_header : {
+                   request_msg : "share_file"
+                  },
+                request_object : {
+                   to_names : arr[0],
+                   to_ids : arr[1],
+                   from_name : userName,
+                   file_name :fileName,
+                   fake_file_name : fakeName,
+                   access_token : accessToken
+                  }
+            }
+              Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  data : json,
+                  error : function(err){
+
+                  },
+                  success : function(json){
+                    if(json.response.success=="true"){
+                    var toAdd="";
+                      if(json.response.not_sent.length==arr.length){
+                         showInfo("chat_info","file not shared");  
+                         return;
+                      }
+                      else if(json.response.not_sent.length>0){
+                          toAdd=", file not shared with "+json.response.not_sent;
+                      }
+                      showInfo("chat_info","file shared successfully"+toAdd);
+                    }  
+                  }
+             });
+      }
+     
+     function showAttachFile(){
+          dom.el("upload_form_area").innerHTML="";
+         var tokenID=new Date().getTime()+""+Math.floor(100000*Math.random());
+         var json={
+              request_header : {
+                   request_msg : "pre_token"
+                  },
+                request_object : {
+                   to_name : currentFriend,
+                   friend_id : currentFriendID,
+                   token_id : tokenID,
+                   from_name : userName,
+                   message :  dom.el("message_area").value
+                  }
+            }
+
+        var form=dom.newEl("form");
+        form.attr("id","upload_form");
+        var input=dom.newEl("input");
+        input.attr("type","file");
+        input.attr("id","upload_file");
+        input.attr("name","file");
+        input.attr("message",dom.el("message_area").value);
+        form.appendChild(input);
+        dom.el("upload_form_area").appendChild(form);
+	$("#add-image").modal();
+             Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  data : json,
+                  error : function(err){
+
+                  },
+                  success : function(json){
+                    if(json.success=="true"){
+                        
+                    }
+                    else{
+                        showInfo("chat_info", "error sending file metadata")
+                    }
+                }  
+             });
+         
+      }
+           
+    
+     
+ function fileUpload(action_url, div_id) {
+    // Create the iframe...
+    var file=dom.el("upload_file");
+    var theFile= file.files[0];
+    if(theFile.size>10485760){
+      alert("File upload limit exceeded, limit is 10 MB") ;
+      return;
+    }
+    var form=dom.el("upload_form");
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("id", "upload_iframe");
+    iframe.setAttribute("name", "upload_iframe");
+    iframe.setAttribute("width", "0");
+    iframe.setAttribute("height", "0");
+    iframe.setAttribute("border", "0");
+    iframe.setAttribute("style", "width: 0; height: 0; border: none;");
+    // Add to document...
+    form.appendChild(iframe);
+    window.frames['upload_iframe'].name = "upload_iframe";
+    iframeId = document.getElementById("upload_iframe");
+    // Add event...
+    var eventHandler = function () {
+ 
+            if (iframeId.detachEvent) iframeId.detachEvent("onload", eventHandler);
+            else iframeId.removeEventListener("load", eventHandler, false);
+ 
+            // Message from server...
+            if (iframeId.contentDocument) {
+                content = iframeId.contentDocument.body.innerHTML;
+            } else if (iframeId.contentWindow) {
+                content = iframeId.contentWindow.document.body.innerHTML;
+            } else if (iframeId.document) {
+                content = iframeId.document.body.innerHTML;
+            }
+            var content=content.substring(content.indexOf("{"), content.lastIndexOf("}")+1);
+
+            var data=JSON.parse(content);
+            if(data.response.success=="false"){
+                showInfo("chat_info", data.response.reason); 
+            }
+            else if(data.response.success=="true"){
+               
+            }
+            //document.getElementById(div_id).innerHTML = content;
+            // Del the iframe...
+            setTimeout('iframeId.parentNode.removeChild(iframeId)', 250);
+        }
+ 
+    if (iframeId.addEventListener) iframeId.addEventListener("load", eventHandler, true);
+    if (iframeId.attachEvent) iframeId.attachEvent("onload", eventHandler);
+ 
+    // Set properties of form...
+    form.setAttribute("target", "upload_iframe");
+    form.setAttribute("action", action_url);
+    form.setAttribute("method", "post");
+    form.setAttribute("enctype", "multipart/form-data");
+    form.setAttribute("encoding", "multipart/form-data");
+    // Submit the form...
+    form.submit();
+    dom.el(div_id).style.display = "block";
+}
+
+
+function downloadFile(fileName,accessToken,fakeFileName) {
+    // Create the iframe...
+    var form=dom.newEl("form");
+    form.attr("id","download_form");
+    var hidInput=dom.newEl("input");
+    hidInput.attr("type","hidden");
+    hidInput.attr("name","file_name");
+    hidInput.attr("value",fileName);
+    var hidInput1=dom.newEl("input");
+    hidInput1.attr("type","hidden");
+    hidInput1.attr("name","access_token");
+    hidInput1.attr("value",accessToken);
+    var hidInput2=dom.newEl("input");
+    hidInput2.attr("type","hidden");
+    hidInput2.attr("name","download_flag");
+    hidInput2.attr("value","true");
+    var hidInput3=dom.newEl("input");
+    hidInput3.attr("type","hidden");
+    hidInput3.attr("name","fake_file_name");
+    hidInput3.attr("value",fakeFileName);
+    form.appendChild(hidInput);
+    form.appendChild(hidInput1);
+    form.appendChild(hidInput2);
+     form.appendChild(hidInput3);
+    dom.el("download_form_area").appendChild(form);
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("id", "download_iframe");
+    iframe.setAttribute("name", "download_iframe");
+    iframe.setAttribute("width", "0");
+    iframe.setAttribute("height", "0");
+    iframe.setAttribute("border", "0");
+    iframe.setAttribute("style", "width: 0; height: 0; border: none;");
+    // Add to document...
+    form.appendChild(iframe);
+    window.frames['download_iframe'].name = "download_iframe";
+    iframeId = document.getElementById("download_iframe");
+    // Add event...
+    var eventHandler = function () {
+ 
+            if (iframeId.detachEvent) iframeId.detachEvent("onload", eventHandler);
+            else iframeId.removeEventListener("load", eventHandler, false);
+ 
+            // Message from server...
+            if (iframeId.contentDocument) {
+                content = iframeId.contentDocument.body.innerHTML;
+            } else if (iframeId.contentWindow) {
+                content = iframeId.contentWindow.document.body.innerHTML;
+            } else if (iframeId.document) {
+                content = iframeId.document.body.innerHTML;
+            }
+            if(content==""){
+               showInfo("chat_info","file was deleted or moved");
+            }
+            // Del the iframe...
+            setTimeout('iframeId.parentNode.removeChild(iframeId)', 250);
+        }
+ 
+    if (iframeId.addEventListener) iframeId.addEventListener("load", eventHandler, true);
+    if (iframeId.attachEvent) iframeId.attachEvent("onload", eventHandler);
+ 
+    // Set properties of form...
+    form.setAttribute("target", "download_iframe");
+    form.setAttribute("action", "/chat/download");
+    form.setAttribute("method", "post");
+    // Submit the form...
+    form.submit();
+}
+
+
+function fetchConversations(){
+      var friendID=dom.el("prev_current_friend").value;
+       var json={
+               request_header : {
+                   request_msg : "fetch_conv"
+                  },
+                request_object : {
+                   friend_id : friendID
+                  }
+            }
+              Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  data : json,
+                  error : function(err){
+ 
+                  },
+                  success : function(json){
+                    console.log(json); 
+                        if(friendID=="all"){
+                            
+                        }
+                        else {
+                          for(var fromPerson in json.response.data){ 
+                            convReceived(fromPerson,json.response.data[fromPerson]);
+                        }
+                      }
+                  }
+             });  
+}
+
+
+    function convReceived(from,message,time){
+              var div=dom.newEl("div");
+              var date=new Date();
+              var id=date.getTime();
+	      div.setAttribute("id",id);
+              var txt=dom.newEl("textarea");
+              div.style.border="4px solid #51CBEE";
+              div.style.padding="10px";
+              div.style.margin="10px";
+              txt.disabled=true;
+              txt.attr("class","input-xxlarge");
+              txt.innerHTML=message;
+              var txtID="txt_"+id;
+              txt.attr("id",txtID);
+              var button=dom.newEl("button");
+              button.attr("class","close");
+              button.attr("type","button");
+              button.attr("onclick","closeMessage("+id+")");
+              button.attr("title","remove message");
+              button.innerHTML="&times";
+              var label=dom.newEl("label");
+              label.innerHTML="<b>"+from+" >> Me</b>    "+time;
+              var data=dom.el("prev_recent_data");
+              div.appendChild(button);
+              var href=dom.newEl("a");
+              href.href="#"+id;
+              href.innerHTML="Share"
+              href.attr("onclick","showShareWindow(\""+txtID+"\")");
+              div.appendChild(href);
+              div.appendChild(label);
+              div.appendChild(txt);         
+              data.appendChild(div); 
+              var area=dom.el(id);
+              area.scrollIntoView();
+              area.focus();
+}
+
+        </script>
+    </head>
+    <body>
+        <div class="container">
+           <table width="940" class="sub-container">
+              <tr>
+                  <td>
+                     <label id="log_name" style="padding-left: 10px"></label>
+                  </td>
+                  <td align="right">
+                    <a href="javascript:doLogOut()" style="padding-right: 20px">Log Out</a>
+                </td>
+               </tr>
+          </table>
+         <div class="sub-container">
+              <h3>Friends List</h3>
+              <label id="user_load" style="display: none;"><img src="files/loader.gif"/></label>
+              <label id="user_info" style="color : red"></label>
+              <label>Username</label>
+               <input type="text" placeholder="username" id="username" class="input-xxlarge"/>
+                <div style="clear: both"></div>
+                <footer>
+                    <button type="button" class="btn btn-primary" onclick="addFriend()">Add Friend</button>
+                    <button type="button" class="btn btn-primary" onclick="friendList()">Friends List</button>
+                </footer>
+                <div id="friend_list">
+                    
+                </div>
+              
+          </div>
+           <div class="sub-container">
+              <h3>Chat</h3>
+             
+               <label id="chat_load" style="display: none;"><img src="files/loader.gif"/></label>
+                <label id="chat_info" style="color : red"></label>
+                <div id="recent_data">
+                    
+                </div>
+
+                <label><select id="current_friend" onchange="changeFriend()" class="input-xxlarge"></select></label>
+                 <textarea class="input-xxlarge" id="message_area" maxlength="400" disabled>
+                </textarea>
+                <div style="clear: both"></div>
+                <footer>
+                    <button type="button" class="btn btn-primary" id="send_button" onclick="sendMessage()" disabled>Send Message</button>
+                    <button type="button" class="btn btn-primary" id="attach_file" onclick="showAttachFile()" disabled>Send File</button>
+                    <input type="checkbox" title="Press Enter to send" id="enter_to_send"/>
+                    <input type="checkbox" title="Play notification sounds" id="notif_sound" checked/>
+                </footer>
+              
+              
+          </div>
+            
+           <div class="sub-container">
+              <h3>Previous Conversations</h3>
+             
+               <label id="prev_load" style="display: none;"><img src="files/loader.gif"/></label>
+                <label id="prev_info" style="color : red"></label>
+                <div id="prev_data">
+                    
+                </div>
+                <label><select id="prev_current_friend" class="input-xxlarge"></select></label>
+                <div style="clear: both"></div>
+                <footer>
+                    <button type="button" class="btn btn-primary" id="conv_button" onclick="fetchConversations()">Fetch Conversations</button>
+                </footer>
+              
+              
+          </div>  
+            
+        <div class="modal hide" id="add-image">
+              <form>
+                 <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3>
+		   Attach File
+		   </h3>
+                    </div>
+                   <div class="modal-body">
+                   <p>
+                 
+	           
+                     <span id="upload_form_area"></span>
+	          </p>
+                  </div>
+                 <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                   <a href="#" class="btn btn-primary" data-dismiss="modal" onclick="fileUpload('/chat/main','chat_info')">OK</a>
+                 
+               </div>
+             </form>
+           </div>
+                <div class="modal hide" id="share-window">
+              <form>
+                 <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3>
+		   Share
+		   </h3>
+                    </div>
+                   <div class="modal-body">
+                   <p>
+                     <span id="share_area"></span>
+	          </p>
+                  </div>
+                    <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                   <a href="#" class="btn btn-primary" data-dismiss="modal" id="share_button">OK</a>
+               </div>
+             </form>
+           </div>
+            <div id="sound">
+            </div>
+            <div id="download_form_area"></div>
+        </div>
+        
+
+    </body>
+</html>

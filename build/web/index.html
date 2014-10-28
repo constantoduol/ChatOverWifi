@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat Over Wifi</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href="files/bootstrap.min.css" rel="stylesheet"/>
+         <link href="files/main.css" rel="stylesheet">
+        <script src="files/ui.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            function doLogin(){
+              var name=dom.el("username").value;   
+              var pass=dom.el("password").value;
+              if(name==""){
+                showInfo("error","username is required");
+                return false;
+              }
+              if(pass==""){
+                showInfo("error","password is required");
+                return false;
+              }
+              var json={
+                  request_header : {
+                     request_msg : "login"
+                  },
+                  
+                  request_object : {
+                     username : name,
+                     password : pass
+                  }
+              }
+              
+               Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  loadArea : "index_load",
+                  data : json,
+                  error : function(err){
+                     showInfo("error","An error occurred ");
+                  },
+                  success : function(json){
+                   if(json.response==false){
+                       showInfo("error","wrong username or password");  
+                   }
+                } 
+    });
+             
+   }
+            
+           function showInfo(area,val){
+              document.getElementById(area).innerHTML=val;
+           }
+        </script>
+    </head>
+    <body>
+            <div class="login-form">      
+                <h3>Login</h3>
+                <label>Username</label>
+                <input type="text" class="input-block-level" id="username" placeholder="Username" />
+                <label>Password</label>
+                <input type="password" class="input-block-level" id="password" placeholder="Password">
+                <label id="error" style="color : red;"></label>
+                <label id="index_load" style="display: none;"><img src="files/loader.gif"/></label>
+                <div style="clear: both"></div>
+                <footer>
+                    <a href="user.html">Register</a>
+                    <button type="button" class="btn btn-medium btn-primary pull-right" onclick="doLogin()">Log in</button>
+                    
+                </footer>
+                 
+        </div>
+    </body>
+</html>

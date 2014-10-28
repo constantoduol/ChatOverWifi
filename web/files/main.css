@@ -1,0 +1,258 @@
+body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+#hor-minimalist-b
+{
+    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size: 12px;
+    background: #fff;
+    margin: 5px;
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+#hor-minimalist-b th
+{
+    font-size: 14px;
+    font-weight: normal;
+    color: #039;
+    padding: 10px 8px;
+    border-bottom: 2px solid #6678b1;
+}
+#hor-minimalist-b td
+{
+    border-bottom: 1px solid #ccc;
+    color: #669;
+    padding: 6px 8px;
+}
+#hor-minimalist-b tbody tr:hover td
+{
+    color: #009;
+}
+
+.paginate {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+a.paginate {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border:1px #EAEAEA solid;
+    border-radius: 5px 5px 5px 5px;
+    color: #737373;
+    padding-left:12px;
+    padding-right:12px;
+    padding-top:6px;
+    padding-bottom:6px;
+    text-decoration: none;
+
+}
+a.paginate:hover {
+    background-color: #3B6EBF;
+    color: #FFF;
+    text-decoration: underline;
+}
+a.current {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border:1px #EAEAEA solid;
+    font-weight:bolder;
+    border-radius: 5px 5px 5px 5px;
+    padding-left:12px;
+    padding-right:12px;
+    padding-top:6px;
+    padding-bottom:6px;
+
+}
+span.inactive {
+
+    background: none repeat scroll 0 0 #FFFFFF;
+    border:1px #EAEAEA solid;
+    border-radius: 5px 5px 5px 5px;
+    padding-left:12px;
+    padding-right:12px;
+    padding-top:6px;
+    padding-bottom:6px;
+    color: #999;
+    cursor: default;
+}
+.navbar-inverse .navbar-inner{
+    background-color: #AA4C0F;
+    background-image: none;
+    border-color:#FFDE97;
+}
+.navbar .brand {
+    color:#FFFFFF;
+    display:block;
+    float:left;
+    font-size:20px;
+    font-weight:200;
+    margin-left:-20px;
+    padding:10px 20px;
+
+}
+.navbar-inverse .nav .active > a, .navbar-inverse .nav .active > a:hover, .navbar-inverse .nav .active > a:focus {
+    background-color:#FFDE97;
+    color:#AB5A00;
+}
+.navbar .nav > li > a {
+    color:#FFDE97;
+    float:none;
+    padding:10px 15px;
+    text-decoration:initial;
+    text-shadow:#AE5A00 0 1px 0;
+}
+.btn-primary {
+    background-color:#51CBEE;
+    background-image:none;
+    background-repeat:repeat no-repeat;
+    border-color:rgba(0, 0, 0, 0.0980392) rgba(0, 0, 0, 0.0980392) rgba(0, 0, 0, 0.247059);
+    color:#FFFFFF;
+    text-shadow:rgba(0, 0, 0, 0.247059) 0 -1px 0;
+}
+.btn-primary :inactive {
+    background-color:#51CBEE;
+    background-image:none;
+    background-repeat:repeat no-repeat;
+    border-color:rgba(0, 0, 0, 0.0980392) rgba(0, 0, 0, 0.0980392) rgba(0, 0, 0, 0.247059);
+    color:#FFFFFF;
+    text-shadow:rgba(0, 0, 0, 0.247059) 0 -1px 0;
+}
+.btn-primary:hover {
+    background-color:#B8ED01;
+    background-image:none;
+    background-repeat:repeat no-repeat;
+    border-color:rgba(0, 0, 0, 0.0980392) rgba(0, 0, 0, 0.0980392) rgba(0, 0, 0, 0.247059);
+    color:#FFDE97;
+    text-shadow:rgba(0, 0, 0, 0.247059) 0 -1px 0;
+}
+
+
+.alert-info {
+    background-color:#FFDE97;
+    border-color:#FFFFFF;
+    color:#BC7219;
+}
+a {
+    color:#AF5A00;
+    text-decoration: none;
+}
+.cerror{ border: 1px #FF0000 solid;}
+.navbar-inverse .nav li.dropdown > .dropdown-toggle .caret {
+  border-bottom-color:#FFFFFF;
+  border-top-color:#FFFFFF;
+}
+
+     .sub-container {
+  position: relative;
+  margin: 15px 0;
+  padding: 39px 19px 14px;
+  padding-top: 19px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+
+/* Echo out a label for the example */
+.sub-container:after {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #9da0a4;
+  -webkit-border-radius: 4px 0 4px 0;
+     -moz-border-radius: 4px 0 4px 0;
+          border-radius: 4px 0 4px 0;
+}
+
+/* Remove spacing between an example and it's code */
+.sub-container + .prettyprint {
+  margin-top: -20px;
+  padding-top: 15px;
+}
+
+/* Tweak examples
+------------------------- */
+.sub-container > p:last-child {
+  margin-bottom: 0;
+}
+.sub-container .table,
+.sub-container .progress,
+.sub-container .well,
+.sub-container .alert,
+.sub-container .hero-unit,
+.sub-container .pagination,
+.sub-container .navbar,
+.sub-container > .nav,
+.sub-container blockquote {
+  margin-bottom: 5px;
+}
+.sub-container .pagination {
+  margin-top: 0;
+}
+
+ .sub-container input[type="text"],
+ .sub-container input[type="password"] {
+       font-size: 16px;
+       height: auto;
+       margin-bottom: 15px;
+       padding-top: 7px;
+       padding-bottom: 9px;
+    }
+.com { color: #93a1a1; }
+.lit { color: #195f91; }
+.pun, .opn, .clo { color: #93a1a1; }
+.fun { color: #dc322f; }
+.str, .atv { color: #D14; }
+.kwd, .prettyprint .tag { color: #1e347b; }
+.typ, .atn, .dec, .var { color: teal; }
+.pln { color: #48484c; }
+
+.prettyprint {
+  padding: 8px;
+  background-color: #f7f7f9;
+  border: 1px solid #e1e1e8;
+}
+
+.prettyprint.linenums {
+  -webkit-box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
+     -moz-box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
+          box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
+}
+
+/* Specify class=linenums on a pre to get line numbering */
+ol.linenums {
+  margin: 0 0 0 33px; /* IE indents via margin-left */
+}
+ol.linenums li {
+  padding-left: 12px;
+  color: #bebec5;
+  line-height: 20px;
+  text-shadow: 0 1px 0 #fff;
+}
+
+    .login-form {
+                max-width: 300px;
+                padding: 19px 29px 29px;
+                margin: 0 auto 20px;
+                background-color: #fff;
+                border: 1px solid #51CBEE;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                border-radius: 5px;
+                -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+                -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+                box-shadow: 0 1px 2px rgba(0,0,0,.05);
+            }
+            .login-form input[type="text"],
+            .login-form input[type="password"] {
+                font-size: 16px;
+                height: auto;
+                margin-bottom: 15px;
+                padding: 7px 9px;
+            }

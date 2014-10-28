@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Change Password | Chat Over Wifi</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href="files/bootstrap.min.css" rel="stylesheet">
+        <link href="files/main.css" rel="stylesheet">
+        <script src="files/ui.js" type="text/javascript"></script>
+        <script type="text/javascript">
+          function changePass(){
+              var name=dom.el("username").value;
+              var oldpass=dom.el("old_password").value;
+              var newpass=dom.el("new_password").value;
+              var confirmpass=dom.el("confirm_new_password").value;
+              if(name==""){
+                showInfo("Name is required"); 
+                dom.el("username").focus();
+                return;
+              }
+              if(oldpass==""){
+                 showInfo("Old password is required"); 
+                 dom.el("old_password").focus();
+                 return;
+              }
+              if(newpass==""){
+                  showInfo("New password is required"); 
+                  dom.el("new_password").focus();
+                  return;
+              }
+              if(confirmpass==""){
+                  showInfo("Confirm new password is required");  
+                  dom.el("confirm_new_password").focus();
+                return;
+              }
+              if(confirmpass!=newpass){
+                    showInfo("Passwords do not match");
+                    return;
+                 }
+                 
+               var json={
+                  request_header : {
+                     request_msg : "change_pass"
+                  },
+                  
+                  request_object : {
+                     username : name,
+                     old_password : oldpass,
+                     new_password : newpass
+                  }
+              }
+          
+                  
+               Ajax.run({
+                  url : "/chat/main",
+                  type : "post",
+                  loadArea : "change_load",
+                  data : json,
+                  error : function(err){
+                     showInfo("An error occurred "+err);
+                  },
+                  success : function(json){
+                   if(json.response==false){
+                       showInfo("wrong username or password");  
+                   }
+                } 
+    });
+              
+
+        }
+        
+           function showInfo(val){
+              document.getElementById("error").innerHTML=val;
+           }
+        </script>
+    </head>
+    <body>
+        <div class="login-form">      
+                 <h3>Change Password</h3>
+                <label>Username</label>
+                <input type="text" class="input-block-level" id="username" placeholder="Username" >
+                <label>Old Password</label>
+                <input type="password" class="input-block-level" id="old_password" placeholder="Old Password">
+                 <label>New Password</label>
+                <input type="password" class="input-block-level" id="new_password" placeholder="New Password">
+                 <label>Confirm New Password</label>
+                <input type="password" class="input-block-level" id="confirm_new_password" placeholder="Confirm New Password">
+                <label id="error" style="color : red;"></label>
+                <label id="change_load" style="display: none;"><img src="files/loader.gif"/></label>
+                <footer>
+                    <button type="button" class="btn btn-medium btn-primary pull-right" onclick="changePass()">Change Password</button>
+                </footer>
+                 <div style="clear: both"></div>
+        </div>
+            
+        
+    </body>
+</html>
